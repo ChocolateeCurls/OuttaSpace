@@ -111,28 +111,28 @@ app.put('/update/:id', function (req, res, next) {
     console.log(itemId);
     console.log(upItem);
 
-    marketrate.collection.findOneAndUpdate({"_id": objectId(itemId)}, {$set: upItem}, function(err, result){
+    marketrate.collection.findOneAndUpdate({ "_id": objectId(itemId) }, { $set: upItem }, function (err, result) {
       assert.equal(null, err);
       console.log('Item updated bitch!!!');
       res.status(204).send(upItem);
     });
 
-/*    res.send('Update ' + itemId + ' with ' + data); */
+    /*    res.send('Update ' + itemId + ' with ' + data); */
   });
 });
-//Ejemplo: DELETE http://localhost:8080/items
+//Ejemplo: DELETE http://localhost:8080/items    
 app.delete('/delete/:id', function (req, res, next) {
   var id = req.params.id;
 
   mongoose.connect("mongodb://localhost/space", { useNewUrlParser: true });
   mongoose.Promise = global.Promise;
   let db = mongoose.connection;
-  db.on('error', console.error.bind(console, 'MongoDB conexs error'));
+  db.on('error', console.error.bind(console, 'MongoDB conexss error'));
   db.once("open", function () {
 
-      console.log(id);
+    console.log(id);
 
-    marketrate.collection.deleteOne({"_id": objectId(id)}, function (err) {
+    marketrate.collection.deleteOne({ "_id": objectId(id) }, function (err) {
 
       assert.equal(null, err);
       console.log("item deleted..!")
