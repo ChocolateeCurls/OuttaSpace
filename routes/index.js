@@ -2,18 +2,30 @@
 const Schema = require("../models/schema.js");
 // Cargar modulos y crear nueva aplicacion
 var mongoose = require("mongoose");
-var cors = require('cors');
-
 
 const marketrate = mongoose.model('marketrate', Schema, 'marketrate');
 var express = require("express");
 var app = express();
-var bodyParser = require('body-parser');
-app.use(bodyParser.json()); // soporte para bodies codificados en jsonsupport
-app.use(bodyParser.urlencoded({ extended: true })); // soporte para bodies codificados
+
+var assert = require('assert');
+var objectId = require('mongodb').ObjectID;
+
+/* Get home page */
+app.get('/', function (req, res, next) {
+  res.render('index', { title: 'Express' });
+});
+
+app.use(express.json())
+app.use(function (req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-with, Content-TypeError, Accept");
+  res.header("Access-Control-Allow-Methods", "GET, HEAD, POST, PUT")
+  next();
+});
 
 
-//Ejemplo: GET http://localhost:8080/items
+
+//Ejemplo: GET http://localhost:8080/items|
 app.get('/get', function (req, res, next) {
 
   mongoose.connect("mongodb://localhost/space", { useNewUrlParser: true });
@@ -59,8 +71,12 @@ app.get('/get/:id', function (req, res, next) {
 
 
 //Ejemplo: POST http://localhost:8080/items
-app.post('/post', function (req, res) {
-  var data = req.body.data;
+app.post('/insert', function (req, res) {
+
+  const nItem = {
+    name: req.body.name,
+    products: req.body.products
+  }
 
   mongoose.connect("mongodb://localhost/space", { useNewUrlParser: true });
   mongoose.Promise = global.Promise;
@@ -69,7 +85,7 @@ app.post('/post', function (req, res) {
   db.once("open", function () {
 
 
-    marketrate.collection.insertOne(data);
+    marketrate.collection.insertOne(nItem);
     console.log('llego al post!!!!');
     res.status(204).end();
   })
@@ -78,8 +94,13 @@ app.post('/post', function (req, res) {
 });
 
 //Ejemplo: PUT http://localhost:8080/items
-app.put('update/:id', function (req, res, next) {
-  var itemId = req.body.id;
+app.put('/update/:id', function (req, res, next) {
+  var itemId = req.body._id;
+
+  const upItem = {
+    name: req.body.name,
+    products: req.body.products
+  }
 
   mongoose.connect("mongodb://localhost/space", { useNewUrlParser: true });
   mongoose.Promise = global.Promise;
@@ -87,43 +108,17 @@ app.put('update/:id', function (req, res, next) {
   db.on('error', console.error.bind(console, 'MongoDB conexs error'));
   db.once("open", function () {
 
-      marketrate.findOne({_id: itemId}, function(err, foundObject){
-        if(err)
-        {
-          console.log(err);
-          res.status(500).send();
-        }else{
-          if(!foundObject){
-            res.status(404).send();
-          }else{
-            if(req.body.name){
-              foundObject.name = req.body.name;
-            }
-            if(req.body.products){
-                foundObject.products = req.body.products;
-            }
+    console.log(itemId);
+    console.log(upItem);
 
-            console.log("UPDATE CON ID, ;O !!!");
-            res.json(updatedObject);
-            res.status(204).end();
+    marketrate.collection.findOneAndUpdate({"_id": objectId(itemId)}, {$set: upItem}, function(err, result){
+      assert.equal(null, err);
+      console.log('Item updated bitch!!!');
+      res.status(204).send(upItem);
+    });
 
-            foundObject.save(function(err, updatedObject){
-              if(err){
-                console.log(err);
-                res.status(500).send();
-              }else{
-                res.send(updatedObject);
-              }
-            });
-          }
-        }
-      });
-
-        //console.log("UPDATE CON ID, ;O !!!");
-        //res.json(marketrate);
-        //res.status(204).end();
-      //res.send('Update ' + itemId + ' with ' + data);
-   });
+/*    res.send('Update ' + itemId + ' with ' + data); */
+  });
 });
 //Ejemplo: DELETE http://localhost:8080/items
 app.delete('/delete/:id', function (req, res) {
@@ -146,10 +141,7 @@ app.delete('/delete/:id', function (req, res) {
   //res.send('Delete ' + itemId);
 });
 
-var server = app.listen(8080, function () {
-  console.log('Server is running..');
-});
-
 
 module.exports = app;
-app.use(cors());
+
+

@@ -6,5 +6,5 @@ const ObjectId = Schema.ObjectId;
 const marketrate = new Schema ({
     ID: ObjectId,
     name: String,
-    products: String,
+    products: Array,
 });
