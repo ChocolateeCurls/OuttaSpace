@@ -121,8 +121,8 @@ app.put('/update/:id', function (req, res, next) {
   });
 });
 //Ejemplo: DELETE http://localhost:8080/items
-app.delete('/delete/:id', function (req, res) {
-  var itemId = req.params.id;
+app.delete('/delete/:id', function (req, res, next) {
+  var id = req.params.id;
 
   mongoose.connect("mongodb://localhost/space", { useNewUrlParser: true });
   mongoose.Promise = global.Promise;
@@ -130,9 +130,11 @@ app.delete('/delete/:id', function (req, res) {
   db.on('error', console.error.bind(console, 'MongoDB conexs error'));
   db.once("open", function () {
 
-    marketrate.remove({ _id: itemId }, function (err) {
+      console.log(id);
 
+    marketrate.collection.deleteOne({"_id": objectId(id)}, function (err) {
 
+      assert.equal(null, err);
       console.log("item deleted..!")
       res.status(204).end();
     });
